@@ -254,6 +254,9 @@ public class WebServer implements Runnable{
             System.out.println("File " + fileRequested + " not found");
         }
     }
+    /*
+    
+    */
     private void directoryWithoutSlash(PrintWriter out, OutputStream dataOut,String directoryRequested) throws IOException{
         File file = new File(WEB_ROOT, FILE_MOVED);
         int fileLength = (int) file.length();
@@ -264,6 +267,7 @@ public class WebServer implements Runnable{
         out.println("Date: " + new Date());
         out.println("Content-type: " + content);
         out.println("Content-length: " + fileLength);
+        //probabile posizione della cartella
         out.println("Location: "+directoryRequested);
         out.println();
         out.flush();
