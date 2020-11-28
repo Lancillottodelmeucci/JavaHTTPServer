@@ -30,6 +30,7 @@ public class WebServer implements Runnable{
     static final String DEFAULT_FILE = "index.html";
     static final String FILE_NOT_FOUND = "404.html";
     static final String METHOD_NOT_SUPPORTED = "not_supported.html";
+    static final String FILE_MOVED="301.html";
         // port to listen connection
     //la porta sulla quale il server è in ascolto
     static final int PORT = 8080;
@@ -111,7 +112,7 @@ public class WebServer implements Runnable{
                 }
                     // we return the not supported file to the client
                 //verrà restituito il file di non supportazione del metodo al client
-                File file = new File(WEB_ROOT, METHOD_NOT_SUPPORTED);
+                File file = new File(WEB_ROOT, METHOD_NOT_SUPPORTED);//non genererà eccezioni
                 int fileLength = (int) file.length();
                 String contentMimeType = "text/html";
                     //read content to return to client
@@ -133,7 +134,8 @@ public class WebServer implements Runnable{
                 //viene inviato il contenuto del file
                 dataOut.write(fileData, 0, fileLength);
                 dataOut.flush();
-            } else {
+            }
+            else {
                     // GET or HEAD method
                 //se il emtodo è tra quelli supportati
                 if (fileRequested.endsWith("/")) {
@@ -225,6 +227,16 @@ public class WebServer implements Runnable{
     
     */
     private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
+        
+        String[] percorso=fileRequested.split("/");
+        int numPercorsi=percorso.length;
+        //prendo il nome dell'oggetto richiesto per vedere se potrebbe essere una cartella
+        String oggetto=percorso[numPercorsi-1];
+        if(oggetto.lastIndexOf(".")==-1){//se non ha estensione
+            directoryWithoutSlash(out,dataOut,fileRequested+"/");
+            return;
+        }
+        
         File file = new File(WEB_ROOT, FILE_NOT_FOUND);
         int fileLength = (int) file.length();
         String content = "text/html";
@@ -240,6 +252,25 @@ public class WebServer implements Runnable{
         dataOut.flush();
         if (VERBOSE) {
             System.out.println("File " + fileRequested + " not found");
+        }
+    }
+    private void directoryWithoutSlash(PrintWriter out, OutputStream dataOut,String directoryRequested) throws IOException{
+        File file = new File(WEB_ROOT, FILE_MOVED);
+        int fileLength = (int) file.length();
+        String content = "text/html";
+        byte[] fileData = readFileData(file, fileLength);
+        out.println("HTTP/1.1 301 Moved Permanently");
+        out.println("Server: Java HTTP Server from SSaurel : 1.0");
+        out.println("Date: " + new Date());
+        out.println("Content-type: " + content);
+        out.println("Content-length: " + fileLength);
+        out.println("Location: "+directoryRequested);
+        out.println();
+        out.flush();
+        dataOut.write(fileData, 0, fileLength);
+        dataOut.flush();
+        if (VERBOSE) {
+            System.out.println("Directory " + directoryRequested + " hint sended");
         }
     }
 }
