@@ -171,7 +171,16 @@ public class WebServer implements Runnable{
         }
         catch (FileNotFoundException fnfe) {
             try {
-                fileNotFound(outAlClient, dataOut, fileRequested);
+                String[] percorso=fileRequested.split("/");
+                int numPercorsi=percorso.length;
+                //prendo il nome dell'oggetto richiesto per vedere se potrebbe essere una cartella
+                String oggetto=percorso[numPercorsi-1];
+                if(oggetto.lastIndexOf(".")==-1){//se non ha estensione
+                    directoryWithoutSlash(outAlClient,dataOut,fileRequested+"/");
+                }
+                else{
+                    fileNotFound(outAlClient, dataOut, fileRequested);
+                }
             } catch (IOException ioe) {
                 System.err.println("Error with file not found exception : " + ioe.getMessage());
             }
@@ -227,16 +236,6 @@ public class WebServer implements Runnable{
     
     */
     private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
-        
-        String[] percorso=fileRequested.split("/");
-        int numPercorsi=percorso.length;
-        //prendo il nome dell'oggetto richiesto per vedere se potrebbe essere una cartella
-        String oggetto=percorso[numPercorsi-1];
-        if(oggetto.lastIndexOf(".")==-1){//se non ha estensione
-            directoryWithoutSlash(out,dataOut,fileRequested+"/");
-            return;
-        }
-        
         File file = new File(WEB_ROOT, FILE_NOT_FOUND);
         int fileLength = (int) file.length();
         String content = "text/html";
