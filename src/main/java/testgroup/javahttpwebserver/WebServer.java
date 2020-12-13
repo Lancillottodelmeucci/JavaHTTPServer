@@ -1,10 +1,16 @@
 package testgroup.javahttpwebserver;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -117,11 +123,17 @@ public class WebServer implements Runnable{
                 dataOut.flush();
             }
             else {
-                //se il emtodo è tra quelli supportati (GET O HEAD)
+                //se il metodo è tra quelli supportati (GET O HEAD)
                 if (fileRequested.endsWith("/")) {
                     fileRequested += DEFAULT_FILE;
                 }
-                File file = new File(WEB_ROOT, fileRequested);
+                File file;
+                if(fileRequested.equals("/punti-vendita.xml")){
+                    file=fromJSONToXML();
+                }
+                else{
+                    file = new File(WEB_ROOT, fileRequested);
+                }
                 int fileLength = (int) file.length();
                 String content = getContentType(fileRequested);
                 //se il metodo è il GET viene ritornato il contenuto
@@ -183,6 +195,53 @@ public class WebServer implements Runnable{
     /*
     
     */
+    private File fromJSONToXML() throws FileNotFoundException, IOException{
+        //recupero il json
+        File fJSON=new File(PATH+"\\src\\main\\java\\testgroup\\generalsources\\puntiVendita.json");
+        //metti il contenuto del json su stringa
+        String fileString=readFile(fJSON);
+        //creo e configuro il json mapper
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
+        //creo la classe dal json
+        ListaRisultati pv = objectMapper.readValue(fileString, ListaRisultati.class);
+        //creo il mapper xml
+        XmlMapper xmlMapper = new XmlMapper();
+        //creo l'array di byte contenente l'xml della classe
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
+        xmlMapper.writeValue(byteArray, pv); 
+        //trasformo l'array di byte in stringa
+        String arrayXML=byteArray.toString();
+        System.out.println(arrayXML);
+        File fXML=new File(WEB_ROOT+"\\punti-vendita.xml");
+        if(fXML.exists()){
+            fXML.delete();//usando il write potrei evitarlo e crearlo solo se non exists
+        }
+        fXML.createNewFile();
+        FileWriter fw=new FileWriter(fXML);
+        fw.write(arrayXML);
+        fw.close();
+        return fXML;
+    }
+    /*
+    
+    */
+    private String readFile(File f) throws FileNotFoundException, IOException{
+        String ret="";
+        FileReader fr=new FileReader(f);
+        BufferedReader br=new BufferedReader(fr);
+        for(;;){
+            String appo=br.readLine();
+            if(appo==null){
+                break;
+            }
+            ret+=appo;
+        }
+        return ret;
+    }
+    /*
+    
+    */
     private byte[] readFileData(File file, int fileLength) throws IOException {
         FileInputStream fileIn = null;
         byte[] fileData = new byte[fileLength];
@@ -209,6 +268,8 @@ public class WebServer implements Runnable{
                 return "text/html";
             case "png":
                 return "image/png";
+            case "xml":
+                return "text/xml";
             default:
                 return "text/plain";
         }
