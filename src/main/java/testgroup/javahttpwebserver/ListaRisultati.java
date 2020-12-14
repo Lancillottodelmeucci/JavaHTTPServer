@@ -7,7 +7,23 @@ import java.util.ArrayList;
  * @author Giovanni Ciaranfi
  */
 public class ListaRisultati {
-    public int size;
+    private int size;
     //il wrap lo rende più leggibile
-    public ArrayList<PuntoVendita> listaRisultati;
+    private ArrayList<PuntoVendita> listaRisultati;
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public void setListaRisultati(ArrayList<PuntoVendita> listaRisultati) {
+        this.listaRisultati = listaRisultati;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public ArrayList<PuntoVendita> getListaRisultati() {
+        return listaRisultati;
+    }
 }
