@@ -22,8 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * La classe per la gesione continua delle connessioni, tarmite il metodo main, 
@@ -140,16 +138,18 @@ public class WebServer implements Runnable{
                     Elenco el=retriveElenco();
                     if(fileRequested.endsWith("xml")){
                         file=classToXML(el);
+                        fileRequested+="elenco.xml";
                     }
                     else{
                         file=classToJSON(el);
+                        fileRequested+="elenco.json";
                     }
                 }
                 else{
                     file = new File(WEB_ROOT, fileRequested);
                 }
                 int fileLength = (int) file.length();
-                String content = getContentType(fileRequested);
+                String content = getContentType(fileRequested);//modificare il modo in cui recupero il content type?
                 //se il metodo è il GET viene ritornato il contenuto
                 if (method.equals("GET")) {//////////////////////////////e se è HEAD che faccio?
                     byte[] fileData = readFileData(file, fileLength);
@@ -321,6 +321,8 @@ public class WebServer implements Runnable{
                 return "image/png";
             case "xml":
                 return "text/xml";
+            case "json":
+                return "application/json";
             default:
                 return "text/plain";
         }
