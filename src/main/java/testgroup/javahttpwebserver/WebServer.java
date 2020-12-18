@@ -17,8 +17,13 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * La classe per la gesione continua delle connessioni, tarmite il metodo main, 
@@ -131,6 +136,15 @@ public class WebServer implements Runnable{
                 if(fileRequested.equals("/punti-vendita.xml")){
                     file=fromJSONToXML();
                 }
+                else if(fileRequested.equals("/db/xml")||fileRequested.equals("/db/json")){
+                    Elenco el=retriveElenco();
+                    if(fileRequested.endsWith("xml")){
+                        file=classToXML(el);
+                    }
+                    else{
+                        file=classToJSON(el);
+                    }
+                }
                 else{
                     file = new File(WEB_ROOT, fileRequested);
                 }
@@ -176,6 +190,8 @@ public class WebServer implements Runnable{
         }
         catch (IOException ioe) {
             System.err.println("Server error : " + ioe);
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.err.println("Errore nel recupero dei dati dal DB. "+ex.getLocalizedMessage());
         }
         finally {
             try {
@@ -191,6 +207,41 @@ public class WebServer implements Runnable{
                 System.out.println("Connection closed.\n");
             }
         }
+    }
+    /*
+    
+    */
+    private Elenco retriveElenco() throws ClassNotFoundException, SQLException{
+        ArrayList<Nominativo> nomi=new ArrayList<>();
+        ResultSet res=new InterrogazioneDB().eseguiQuery("select nome, cognome from persone");
+        while (res.next()) {
+            nomi.add(new Nominativo(res.getString(1), res.getString(2)));
+        }
+        return new Elenco(nomi);
+    }
+    /*
+    
+    */
+    private File classToXML(Elenco el) throws IOException{
+        XmlMapper xmlMapper = new XmlMapper();
+        File fXML=new File(WEB_ROOT+"\\elenco.xml");
+        if(!fXML.exists()){
+            fXML.createNewFile();
+        }
+        xmlMapper.writeValue(fXML, el);
+        return fXML;
+    }
+    /*
+    
+    */
+    private File classToJSON(Elenco el) throws IOException{
+        ObjectMapper objectMapper = new ObjectMapper();
+        File fJSON=new File(WEB_ROOT+"\\elenco.json");
+        if(!fJSON.exists()){
+            fJSON.createNewFile();
+        }
+        objectMapper.writeValue(fJSON, el);
+        return fJSON;
     }
     /*
     

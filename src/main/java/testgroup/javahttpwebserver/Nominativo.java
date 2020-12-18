@@ -1,13 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package testgroup.prototipo;
+package testgroup.javahttpwebserver;
 
 /**
- *
- * @author giova
+ * La classe che contiene i dati per gestire i nominativi delle persone
+ * @author Giovanni Ciaranfi
  */
 public class Nominativo {
     private String nome;

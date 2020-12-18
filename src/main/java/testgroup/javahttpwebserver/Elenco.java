@@ -1,15 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package testgroup.prototipo;
+package testgroup.javahttpwebserver;
 
 import java.util.ArrayList;
 
 /**
- *
- * @author giova
+ * La classe contenitore dei nominativi
+ * @author Giovanni Ciaranfi
  */
 public class Elenco {
     private ArrayList<Nominativo> nominativi;
