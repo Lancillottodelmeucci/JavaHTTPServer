@@ -40,7 +40,7 @@ public class WebServer implements Runnable{
     static final String METHOD_NOT_SUPPORTED = "not_supported.html";
     static final String FILE_MOVED="301.html";
     //la porta sulla quale il server è in ascolto
-    static final int PORT = 8080;
+    static final int PORT = 3000;
     // VERBOSE mode
     static final boolean VERBOSE = true;
     //il socket del client che si connette
@@ -213,7 +213,7 @@ public class WebServer implements Runnable{
     */
     private Elenco retriveElenco() throws ClassNotFoundException, SQLException{
         ArrayList<Nominativo> nomi=new ArrayList<>();
-        ResultSet res=new InterrogazioneDB().eseguiQuery("select nome, cognome from persone");
+        ResultSet res=new InterrogazioneDB().eseguiQuery("select nome, cognome from persone;");
         while (res.next()) {
             nomi.add(new Nominativo(res.getString(1), res.getString(2)));
         }

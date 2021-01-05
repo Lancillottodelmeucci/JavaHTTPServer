@@ -27,6 +27,9 @@ public class InterrogazioneDB {
         else{
             query="select \"Formato della Query non valido\";";
         }
+        if(!query.endsWith(";")){
+            query+=";";
+        }
     }
     public ResultSet eseguiQuery() throws SQLException{
         Statement stat=conn.createStatement();

@@ -3,13 +3,40 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>testGroup</groupId>
     <artifactId>JavaHTTPWebServer</artifactId>
-    <version>1.1-ALPHA</version>
+    <version>1.2-ALPHA</version>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
     </properties>
+    <build>
+        <finalName>JavaHTTPWebServer</finalName>
+        <plugins>
+            <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+            <archive>
+              <manifest>
+                    <mainClass>testgroup.javahttpwebserver.WebServer</mainClass>
+              </manifest>
+            </archive>
+            <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+            </descriptorRefs>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>make-assembly</id> 
+                    <phase>package</phase> 
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                </execution>
+            </executions>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
