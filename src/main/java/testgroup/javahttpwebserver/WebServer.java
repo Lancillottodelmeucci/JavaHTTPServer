@@ -33,8 +33,8 @@ import java.util.StringTokenizer;
 //ogni connessione da parte del client viene gestita da un thread
 public class WebServer implements Runnable{
     static final File F=new File("");
-    static final String PATH=F.getAbsolutePath();
-    static final File WEB_ROOT = new File(PATH+"\\src\\main\\java\\testgroup\\websources");
+    static final String PATH=F.getAbsolutePath()+"/../";//path necessario per codeanywhere (/../) per uscire da target
+    static final File WEB_ROOT = new File(PATH+"/src/main/java/testgroup/websources");
     static final String DEFAULT_FILE = "index.html";
     static final String FILE_NOT_FOUND = "404.html";
     static final String METHOD_NOT_SUPPORTED = "not_supported.html";
@@ -224,7 +224,7 @@ public class WebServer implements Runnable{
     */
     private File classToXML(Elenco el) throws IOException{
         XmlMapper xmlMapper = new XmlMapper();
-        File fXML=new File(WEB_ROOT+"\\elenco.xml");
+        File fXML=new File(WEB_ROOT+"/elenco.xml");
         if(!fXML.exists()){
             fXML.createNewFile();
         }
@@ -236,7 +236,7 @@ public class WebServer implements Runnable{
     */
     private File classToJSON(Elenco el) throws IOException{
         ObjectMapper objectMapper = new ObjectMapper();
-        File fJSON=new File(WEB_ROOT+"\\elenco.json");
+        File fJSON=new File(WEB_ROOT+"/elenco.json");
         if(!fJSON.exists()){
             fJSON.createNewFile();
         }
@@ -248,7 +248,7 @@ public class WebServer implements Runnable{
     */
     private File fromJSONToXML() throws FileNotFoundException, IOException{
         //recupero il json
-        File fJSON=new File(PATH+"\\src\\main\\java\\testgroup\\generalsources\\puntiVendita.json");
+        File fJSON=new File(PATH+"/src/main/java/testgroup/generalsources/puntiVendita.json");
         //metti il contenuto del json su stringa
         String fileString=readFile(fJSON);
         //creo e configuro il json mapper
@@ -264,7 +264,7 @@ public class WebServer implements Runnable{
         //trasformo l'array di byte in stringa
         String arrayXML=byteArray.toString();
         System.out.println(arrayXML);
-        File fXML=new File(WEB_ROOT+"\\punti-vendita.xml");
+        File fXML=new File(WEB_ROOT+"/punti-vendita.xml");
         if(fXML.exists()){
             fXML.delete();//usando il write potrei evitarlo e crearlo solo se non exists
         }
