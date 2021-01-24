@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -22,6 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
+import org.apache.commons.io.FileUtils;
 
 /**
  * La classe per la gesione continua delle connessioni, tarmite il metodo main, 
@@ -32,9 +34,10 @@ import java.util.StringTokenizer;
 
 //ogni connessione da parte del client viene gestita da un thread
 public class WebServer implements Runnable{
-    static final File F=new File("");
-    static final String PATH=F.getAbsolutePath()+"/../";//path necessario per codeanywhere (/../) per uscire da target
-    static final File WEB_ROOT = new File(PATH+"/src/main/java/testgroup/websources");
+    //static final File F=new File("");
+    //static final String PATH=F.getAbsolutePath()+"/../";//path necessario per codeanywhere (/../) per uscire da target
+    static final String WEB_ROOT = "websources/";
+    static final String SOURCE_ROOT = "generalsources/";
     static final String DEFAULT_FILE = "index.html";
     static final String FILE_NOT_FOUND = "404.html";
     static final String METHOD_NOT_SUPPORTED = "not_supported.html";
@@ -106,11 +109,14 @@ public class WebServer implements Runnable{
                     System.out.println("501 Not Implemented : " + method + " method.");
                 }
                 //verrà restituito il file di non supportazione del metodo al client
-                File file = new File(WEB_ROOT, METHOD_NOT_SUPPORTED);//non genererà eccezioni
-                int fileLength = (int) file.length();
+                String file = WEB_ROOT+METHOD_NOT_SUPPORTED;//non genererà eccezioni
                 String contentMimeType = "text/html";
                 //viene letto il contenuto del file da inviare al client
-                byte[] fileData = readFileData(file, fileLength);
+                if(getClass().getResourceAsStream(file)==null){
+                    throw new FileNotFoundException();
+                }
+                byte[] fileData = readFileData(file);
+                int fileLength = fileData.length;
                 //vengono inviati i seguenti HTTP headers con i dati al cleint
                 outAlClient.println("HTTP/1.1 501 Not Implemented");
                 outAlClient.println("Server: Java HTTP Server from SSaurel : 1.0");
@@ -130,29 +136,47 @@ public class WebServer implements Runnable{
                 if (fileRequested.endsWith("/")) {
                     fileRequested += DEFAULT_FILE;
                 }
-                File file;
+                String file;
                 if(fileRequested.equals("/punti-vendita.xml")){
-                    file=fromJSONToXML();
+                    file="punti-vendita.xml";
                 }
-                else if(fileRequested.equals("/db/xml")||fileRequested.equals("/db/json")){
-                    Elenco el=retriveElenco();
-                    if(fileRequested.endsWith("xml")){
-                        file=classToXML(el);
-                        fileRequested+="elenco.xml";
-                    }
-                    else{
-                        file=classToJSON(el);
-                        fileRequested+="elenco.json";
-                    }
+                else if(fileRequested.equals("/db/xml")){
+                    file="db/xml";
+                    fileRequested+="elenco.xml";
+                }
+                else if(fileRequested.equals("/db/json")){
+                    file="db/json";
+                    fileRequested+="elenco.json";
                 }
                 else{
-                    file = new File(WEB_ROOT, fileRequested);
+                    file = WEB_ROOT+fileRequested.substring(1);
                 }
-                int fileLength = (int) file.length();
+                int fileLength;
                 String content = getContentType(fileRequested);//modificare il modo in cui recupero il content type?
                 //se il metodo è il GET viene ritornato il contenuto
                 if (method.equals("GET")) {//////////////////////////////e se è HEAD che faccio?
-                    byte[] fileData = readFileData(file, fileLength);
+                    byte[] fileData;
+                    if(file.equals("punti-vendita.xml")){
+                        fileData=fromJSONToXML();
+                        System.err.println("\n\n\nArrivo p1\n\n\n\n");
+                    }
+                    else if(file.endsWith("xml")||file.endsWith("json")){
+                        Elenco el=retriveElenco();
+                        if(file.endsWith("xml")){
+                            fileData=classToXML(el);
+                        }
+                        else{
+                            fileData=classToJSON(el);
+                        }
+                    }
+                    else{
+                        if(getClass().getClassLoader().getResourceAsStream(file)==null||content.equals("folder")){
+                            System.err.println(file);
+                            throw new FileNotFoundException();
+                        }
+                        fileData = readFileData(file);
+                    }
+                    fileLength=fileData.length;
                     //vengono inviati gli headers HTTP
                     outAlClient.println("HTTP/1.1 200 OK");
                     outAlClient.println("Server: Java HTTP Server from SSaurel : 1.0");
@@ -222,33 +246,69 @@ public class WebServer implements Runnable{
     /*
     
     */
-    private File classToXML(Elenco el) throws IOException{
+    private byte[] classToXML(Elenco el) throws IOException{
+        System.err.println("\n\n\nArrivo p1\n\n\n\n");
         XmlMapper xmlMapper = new XmlMapper();
-        File fXML=new File(WEB_ROOT+"/elenco.xml");
+        File fXML=new File("xml.xml");
         if(!fXML.exists()){
             fXML.createNewFile();
         }
+        System.err.println("\n\n\nArrivo p2\n\n\n\n");
         xmlMapper.writeValue(fXML, el);
-        return fXML;
+        System.err.println("\n\n\nArrivo p3\n\n\n\n");
+        FileInputStream fileIn = null;
+        byte[] fileData = new byte[(int)fXML.length()];
+        try {
+            fileIn = new FileInputStream(fXML);
+            fileIn.read(fileData);
+        }
+        finally {
+            if (fileIn != null){
+                fileIn.close();
+            }
+        }
+        return fileData;
+        //return "elenco.xml";
     }
     /*
     
     */
-    private File classToJSON(Elenco el) throws IOException{
+    private byte[] classToJSON(Elenco el) throws IOException{
+        System.err.println("\n\n\nArrivo p1\n\n\n\n");
         ObjectMapper objectMapper = new ObjectMapper();
-        File fJSON=new File(WEB_ROOT+"/elenco.json");
+        File fJSON=new File("json.json");
         if(!fJSON.exists()){
             fJSON.createNewFile();
         }
+        System.err.println("\n\n\nArrivo p2\n\n\n\n");
         objectMapper.writeValue(fJSON, el);
-        return fJSON;
+        System.err.println("\n\n\nArrivo p3\n\n\n\n");
+        FileInputStream fileIn = null;
+        byte[] fileData = new byte[(int)fJSON.length()];
+        try {
+            fileIn = new FileInputStream(fJSON);
+            fileIn.read(fileData);
+        }
+        finally {
+            if (fileIn != null){
+                fileIn.close();
+            }
+        }
+        return fileData;
+        //return "elenco.json";
     }
     /*
     
     */
-    private File fromJSONToXML() throws FileNotFoundException, IOException{
+    private byte[] fromJSONToXML() throws FileNotFoundException, IOException{
         //recupero il json
-        File fJSON=new File(PATH+"/src/main/java/testgroup/generalsources/puntiVendita.json");
+        File fJSON=new File("json.json");//new File("/src/main/java/testgroup/generalsources/puntiVendita.json");
+        fJSON.createNewFile();
+        System.err.println("\n\n\nArrivo p2\n\n\n\n");
+        InputStream fin=getClass().getClassLoader().getResourceAsStream(SOURCE_ROOT+"puntiVendita.json");
+        System.err.println("\n\n\nArrivo p3\n\n\n\n");
+        FileUtils.copyInputStreamToFile(fin, fJSON);
+        System.err.println("\n\n\nArrivo p4\n\n\n\n");
         //metti il contenuto del json su stringa
         String fileString=readFile(fJSON);
         //creo e configuro il json mapper
@@ -263,16 +323,19 @@ public class WebServer implements Runnable{
         xmlMapper.writeValue(byteArray, pv); 
         //trasformo l'array di byte in stringa
         String arrayXML=byteArray.toString();
-        System.out.println(arrayXML);
-        File fXML=new File(WEB_ROOT+"/punti-vendita.xml");
-        if(fXML.exists()){
-            fXML.delete();//usando il write potrei evitarlo e crearlo solo se non exists
-        }
-        fXML.createNewFile();
-        FileWriter fw=new FileWriter(fXML);
-        fw.write(arrayXML);
-        fw.close();
-        return fXML;
+        byte[] bytea=byteArray.toByteArray();
+        return bytea;
+//        System.out.println(arrayXML);
+//        File fXML=new File("");
+//        if(fXML.exists()){
+//            fXML.delete();//usando il write potrei evitarlo e crearlo solo se non exists
+//        }
+//        fXML.createNewFile();
+//        //FileUtils.writeByteArrayToFile(fXML, byteArray);
+//        FileWriter fw=new FileWriter(fXML);
+//        fw.write(arrayXML);
+//        fw.close();
+//        return fXML.getAbsolutePath();
     }
     /*
     
@@ -293,11 +356,14 @@ public class WebServer implements Runnable{
     /*
     
     */
-    private byte[] readFileData(File file, int fileLength) throws IOException {
-        FileInputStream fileIn = null;
-        byte[] fileData = new byte[fileLength];
+    private byte[] readFileData(String file) throws IOException {
+        InputStream fileIn = null;
+        byte[] fileData = null;
         try {
-            fileIn = new FileInputStream(file);
+            
+            fileIn = getClass().getClassLoader().getResourceAsStream(file);
+            
+            fileData=new byte[fileIn.available()];
             fileIn.read(fileData);
         }
         finally {
@@ -313,6 +379,9 @@ public class WebServer implements Runnable{
     //ritorna il tipi supportati
     private String getContentType(String fileRequested) {
         String ext=fileRequested.substring(fileRequested.lastIndexOf(".")+1);
+        if(ext.equals(fileRequested)){
+            return "folder";
+        }
         switch(ext){
             case "htm":
             case "html":
@@ -323,6 +392,8 @@ public class WebServer implements Runnable{
                 return "text/xml";
             case "json":
                 return "application/json";
+            case "":
+                return "folder";
             default:
                 return "text/plain";
         }
@@ -331,10 +402,10 @@ public class WebServer implements Runnable{
     
     */
     private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
-        File file = new File(WEB_ROOT, FILE_NOT_FOUND);
-        int fileLength = (int) file.length();
+        String file =WEB_ROOT+FILE_NOT_FOUND;
         String content = "text/html";
-        byte[] fileData = readFileData(file, fileLength);
+        byte[] fileData = readFileData(file);
+        int fileLength = fileData.length;
         out.println("HTTP/1.1 404 File Not Found");
         out.println("Server: Java HTTP Server from SSaurel : 1.0");
         out.println("Date: " + new Date());
@@ -352,10 +423,10 @@ public class WebServer implements Runnable{
     
     */
     private void directoryWithoutSlash(PrintWriter out, OutputStream dataOut,String directoryRequested) throws IOException{
-        File file = new File(WEB_ROOT, FILE_MOVED);
+        String file = WEB_ROOT+FILE_MOVED;
         int fileLength = (int) file.length();
         String content = "text/html";
-        byte[] fileData = readFileData(file, fileLength);
+        byte[] fileData = readFileData(file);
         out.println("HTTP/1.1 301 Moved Permanently");
         out.println("Server: Java HTTP Server from SSaurel : 1.0");
         out.println("Date: " + new Date());
