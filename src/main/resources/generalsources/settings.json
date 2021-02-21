@@ -3,7 +3,7 @@
     "HOST": "webdb",
     "PORTA_DB": 3306,
     "PORTA_SERVER": 3000,
-    "USER": "root",
+    "USER": "noroot",
     "PASSWORD": "01-2W-Lq",
     "DATABASE": "webserver_db",
     "TIMEZONE": "Europe/Rome"
