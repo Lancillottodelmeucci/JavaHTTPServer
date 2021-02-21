@@ -1,5 +1,6 @@
 package testgroup.javahttpwebserver;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,14 +12,22 @@ import java.sql.Statement;
  * @author Giovanni Ciaranfi
  */
 public class InterrogazioneDB {
-    private final String DRIVER="com.mysql.cj.jdbc.Driver";
-    private String url_db="jdbc:mysql://localhost:3306/webserver_db?serverTimezone=Europe/Rome";
+    private final String DRIVER;
+    private String url_db;
     private String query;
     private Connection conn;
     private ResultSet result;
+    private Settings settings;
     public InterrogazioneDB() throws ClassNotFoundException, SQLException {
+        try {
+            settings=new Settings().loadSettings();
+        } catch (IOException e) {
+            settings=Settings.defaultSettings();
+        }
+        DRIVER=settings.DRIVER;
+        url_db="jdbc:mysql://"+settings.HOST+":"+settings.PORTA_DB+"/"+settings.DATABASE+"?serverTimezone="+settings.TIMEZONE;
         Class.forName(DRIVER);
-        conn=DriverManager.getConnection(url_db, "root", "01-2W-Lq");
+        conn=DriverManager.getConnection(url_db, settings.USER, settings.PASSWORD);
     }
     public void setQuery(String q){
         if(q.toUpperCase().startsWith("SELECT")){

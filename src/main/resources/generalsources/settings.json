@@ -1,0 +1,10 @@
+{
+    "DRIVER": "com.mysql.cj.jdbc.Driver",
+    "HOST": "localhost",
+    "PORTA_DB": 3306,
+    "PORTA_SERVER": 3000,
+    "USER": "root",
+    "PASSWORD": "01-2W-Lq",
+    "DATABASE": "webserver_db",
+    "TIMEZONE": "Europe/Rome"
+}

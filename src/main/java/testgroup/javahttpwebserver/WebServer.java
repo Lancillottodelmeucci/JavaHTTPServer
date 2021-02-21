@@ -11,7 +11,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -43,7 +42,7 @@ public class WebServer implements Runnable{
     static final String METHOD_NOT_SUPPORTED = "not_supported.html";
     static final String FILE_MOVED="301.html";
     //la porta sulla quale il server è in ascolto
-    static final int PORT = 3000;
+    static int PORT;
     // VERBOSE mode
     static final boolean VERBOSE = true;
     //il socket del client che si connette
@@ -60,6 +59,11 @@ public class WebServer implements Runnable{
      * @param args 
      */
     public static void main(String[] args) {
+        try {
+            PORT = new Settings().loadSettings().PORTA_SERVER;
+        } catch (IOException ex) {
+            PORT=Settings.defaultSettings().PORTA_SERVER;
+        }
             try {
                 ServerSocket serverConnect = new ServerSocket(PORT);
                 System.out.println("Server started.\nListening for connections on port : " + PORT + " ...\n");
