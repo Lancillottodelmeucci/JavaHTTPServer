@@ -24,10 +24,13 @@ public class InterrogazioneDB {
         } catch (IOException e) {
             settings=Settings.defaultSettings();
         }
+        System.out.println("jdbc:mysql://"+settings.HOST+":"+settings.PORTA_DB+"/"+settings.DATABASE+"?serverTimezone="+settings.TIMEZONE);
+        System.out.println(settings.PASSWORD+" "+settings.USER);
         DRIVER=settings.DRIVER;
         url_db="jdbc:mysql://"+settings.HOST+":"+settings.PORTA_DB+"/"+settings.DATABASE+"?serverTimezone="+settings.TIMEZONE;
         Class.forName(DRIVER);
         conn=DriverManager.getConnection(url_db, settings.USER, settings.PASSWORD);
+        System.out.println(conn);
     }
     public void setQuery(String q){
         if(q.toUpperCase().startsWith("SELECT")){

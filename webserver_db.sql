@@ -18,7 +18,7 @@
 --
 -- Table structure for table `persone`
 --
-create schema webserver_db;
+create schema if not exists webserver_db;
 use webserver_db;
 DROP TABLE IF EXISTS `persone`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
